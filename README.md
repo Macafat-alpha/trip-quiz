@@ -4,6 +4,7 @@
 
 - **アプリ**（司会用・スマホで開く）: https://macafat-alpha.github.io/trip-quiz/
 - **クイズを作る skill**（Claude Code 用）: [`skill/trip-quiz/`](skill/trip-quiz/)
+- **使い方マニュアル**（PDF・13ページ）: [`docs/trip-quiz-manual.pdf`](docs/trip-quiz-manual.pdf)
 
 ## skill の入れ方
 
