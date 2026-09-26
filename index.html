@@ -469,6 +469,7 @@ function validate(data) {
     if ("spicy" in q && typeof q.spicy !== "boolean") errors.push(`${tag} spicy が真偽値ではない`);
     if ("points" in q && !(Number.isInteger(q.points) && q.points >= 1)) errors.push(`${tag} points が不正`);
     const a = q.answer, c = q.choices;
+    if ("choices_speech" in q && !(Array.isArray(q.choices_speech) && Array.isArray(c) && q.choices_speech.length === c.length && q.choices_speech.every(x => typeof x === "string"))) errors.push(`${tag} choices_speech は choices と同じ数の文字列`);
     if (q.type === "choice") {
       if (!(Array.isArray(c) && c.length >= 2 && c.length <= 4 && c.every(x => typeof x === "string" && x))) errors.push(`${tag} choices は2〜4個の文字列`);
       else if (new Set(c).size !== c.length) errors.push(`${tag} choices が重複`);
@@ -605,13 +606,14 @@ function toSpeech(text) {
 }
 function readingOf(name) { const p = S.players.find(x => x.name === name); return p ? p.reading : name; }
 const whoChoices = q => q.choices || playerNames(S.quiz.players);
+const choiceSpeech = (q, i) => (q.choices_speech && q.choices_speech[i]) || toSpeech(q.choices[i]);
 
 function questionParts(q) {
   const parts = [];
   if (isDouble(S.idx) && S.idx === S.order.length - S.settings.doubleLast) parts.push("ここから得点2倍！");
   parts.push(S.idx === S.order.length - 1 ? "最終問題。" : `第${S.idx + 1}問。`);
   parts.push(q.speech ? q.speech : toSpeech(q.question));
-  if (q.type === "choice") q.choices.forEach((c, i) => parts.push(`${KEYS[i]}、${toSpeech(c)}。`));
+  if (q.type === "choice") q.choices.forEach((c, i) => parts.push(`${KEYS[i]}、${choiceSpeech(q, i)}。`));
   if (q.type === "who") whoChoices(q).forEach((c, i) => parts.push(`${KEYS[i] || ""}、${readingOf(c)}。`));
   if (q.type === "truefalse" && !/マル|バツ|○|×/.test(q.question)) parts.push("マルか、バツか。");
   return parts;
@@ -626,7 +628,7 @@ function answerParts(q) {
   let a;
   if (q.type === "truefalse") a = q.answer ? "マル" : "バツ";
   else if (q.type === "who") a = readingOf(q.answer);
-  else if (q.type === "choice") a = `${KEYS[q.choices.indexOf(q.answer)]}、${toSpeech(q.answer)}`;
+  else if (q.type === "choice") a = `${KEYS[q.choices.indexOf(q.answer)]}、${choiceSpeech(q, q.choices.indexOf(q.answer))}`;
   else if (q.type === "number") a = fmtNum(q.answer) + (q.unit || "");
   else a = toSpeech(q.answer);
   const parts = [(q.type === "open" ? "答えは、" : "正解は、") + a + "！"];
