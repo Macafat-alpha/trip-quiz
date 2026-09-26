@@ -746,7 +746,7 @@ function alertBox(errors) {
 function vHome() {
   const resume = S.quiz && S.order && S.records;
   return `<div class="wrap">
-    <div class="hero">${HERO_SVG}<img src="assets/hero.webp" alt="" onerror="this.remove()"></div>
+    <div class="hero">${HERO_SVG}<picture><source srcset="assets/hero.webp" type="image/webp"><img src="assets/hero.jpg" alt="" onerror="this.closest('picture').remove()"></picture></div>
     <div class="kicker">TRIP QUIZ</div><hr class="rule">
     <div class="logo">今日の旅、<br><em>覚えてる？</em></div>
     <p class="lead">一日の会話から作ったクイズを、スマホが読み上げます。司会は正解した人をタップするだけ。</p>
