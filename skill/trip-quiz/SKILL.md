@@ -20,12 +20,12 @@ description: 旅行・飲み会・イベントなど、みんなで過ごした�
    - 日付（既定は今日）と、その日の場面の流れ（例: 行きの車／BBQ／温泉／夕食）。場面は時間帯の見出しに使う
    - 素材の場所: 文字起こしのテキストファイル（どの録音アプリでもよい）の場所か、Plaud を使ったか
 2. **素材を用意する**
-   - **Plaud の場合**: `plaud me` でログイン状態を確認し、`python3 <SKILL_DIR>/scripts/fetch_plaud.py YYYY-MM-DD [--from HH:MM]` を実行する
+   - **テキストの場合（基本）**: 指定されたファイル（.txt / .md など。iPhoneのボイスメモ、Googleレコーダー、Notta など、どの録音・文字起こしアプリの書き出しでもよい）をそのまま読む。複数あれば全部読む
+   - **Plaud の場合（任意）**: `plaud me` でログイン状態を確認し、`python3 <SKILL_DIR>/scripts/fetch_plaud.py YYYY-MM-DD [--from HH:MM]` を実行する
      - 出力は `./trip-quiz/work/YYYY-MM-DD/day.txt`（`[HH:MM] Speaker N: 発話`、日本時間）
      - 旅と関係ない録音（仕事など）が混ざる日は `--from` で出発時刻以降に絞る
      - 文字起こしが空の録音があれば、Plaud アプリで録音ごとに「文字起こし」を実行してから再実行してもらう（同期だけでは文字起こしは始まらない）
      - `plaud` コマンドがなければ `npm i -g @plaud-ai/cli` → `plaud login` を案内する
-   - **テキストの場合**: 指定されたファイル（.txt / .md など、他の文字起こしアプリの出力でよい）をそのまま読む
 3. **読む**: 素材を全部読む。時刻がない素材は、場面の流れから segment を決める
 4. **作る**: 下の「問題の作り方」に従って `./trip-quiz/quiz-YYYYMMDD.json` を書く
 5. **検証**: `python3 <SKILL_DIR>/scripts/validate_quiz.py ./trip-quiz/quiz-YYYYMMDD.json --min 15`
