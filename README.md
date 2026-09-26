@@ -15,7 +15,7 @@ cp -R trip-quiz/skill/trip-quiz ~/.claude/skills/
 
 Claude Code を開き直すと `/trip-quiz` が使えます。
 
-Plaud で録音する場合は、Plaud CLI も入れてログインしておきます（テキストの文字起こしだけで作るなら不要です）。
+録音はどのアプリでもかまいません。文字起こしをテキストで保存しておけば作れます。Plaud を使う場合だけ、Plaud CLI を入れてログインしておくと録音を自動で取り込めます。
 
 ```bash
 npm i -g @plaud-ai/cli
@@ -24,7 +24,7 @@ plaud login
 
 ## 使い方
 
-1. 当日の会話を録音する（Plaud、または任意の文字起こしアプリ）
+1. 当日の会話を録音し、文字起こしをテキストで保存する（録音アプリは何でもよい）
 2. Claude Code で `/trip-quiz` を実行し、参加者の名前と読みを伝える
 3. できた `trip-quiz/quiz-YYYYMMDD.json` を司会のスマホに送る
 4. アプリで読み込んで遊ぶ
