@@ -470,20 +470,22 @@ function validate(data) {
     if ("points" in q && !(Number.isInteger(q.points) && q.points >= 1)) errors.push(`${tag} points が不正`);
     const a = q.answer, c = q.choices;
     if ("choices_speech" in q && !(Array.isArray(q.choices_speech) && Array.isArray(c) && q.choices_speech.length === c.length && q.choices_speech.every(x => typeof x === "string"))) errors.push(`${tag} choices_speech は choices と同じ数の文字列`);
+    const as = Array.isArray(a) ? a : [a];
+    if (Array.isArray(a) && (!a.length || new Set(a).size !== a.length)) errors.push(`${tag} answer の配列が空か重複`);
     if (q.type === "choice") {
       if (!(Array.isArray(c) && c.length >= 2 && c.length <= 4 && c.every(x => typeof x === "string" && x))) errors.push(`${tag} choices は2〜4個の文字列`);
       else if (new Set(c).size !== c.length) errors.push(`${tag} choices が重複`);
-      else if (!c.includes(a)) errors.push(`${tag} answer が choices に含まれない`);
+      else if (!as.every(x => c.includes(x))) errors.push(`${tag} answer が choices に含まれない`);
     } else if (q.type === "who") {
       const pool = c ?? names;
       if (c != null && !(Array.isArray(c) && c.every(x => names.includes(x)))) errors.push(`${tag} who の choices に players 以外の名前`);
-      if (!Array.isArray(pool) || !pool.includes(a)) errors.push(`${tag} answer が players に含まれない`);
+      if (!Array.isArray(pool) || !as.every(x => pool.includes(x))) errors.push(`${tag} answer が players に含まれない`);
     } else if (q.type === "truefalse") {
       if (typeof a !== "boolean") errors.push(`${tag} answer が true/false ではない`);
     } else if (q.type === "number") {
       if (typeof a !== "number" || !isFinite(a)) errors.push(`${tag} answer が数値ではない`);
     } else if (q.type === "open") {
-      if (typeof a !== "string" || !a.trim()) errors.push(`${tag} answer（模範解答）がない`);
+      if (!as.every(x => typeof x === "string" && x.trim())) errors.push(`${tag} answer（模範解答）がない`);
     }
   });
   return errors;
@@ -606,6 +608,7 @@ function toSpeech(text) {
 }
 function readingOf(name) { const p = S.players.find(x => x.name === name); return p ? p.reading : name; }
 const whoChoices = q => q.choices || playerNames(S.quiz.players);
+const answersOf = q => Array.isArray(q.answer) ? q.answer : [q.answer];
 const choiceSpeech = (q, i) => (q.choices_speech && q.choices_speech[i]) || toSpeech(q.choices[i]);
 
 function questionParts(q) {
@@ -621,16 +624,16 @@ function questionParts(q) {
 function answerText(q) {
   if (q.type === "truefalse") return q.answer ? "○" : "×";
   if (q.type === "number") return fmtNum(q.answer) + (q.unit || "");
-  if (q.type === "choice") return `${KEYS[q.choices.indexOf(q.answer)]}. ${q.answer}`;
-  return String(q.answer);
+  if (q.type === "choice") return answersOf(q).map(a => `${KEYS[q.choices.indexOf(a)]}. ${a}`).join("／");
+  return answersOf(q).map(String).join(q.type === "who" ? "・" : "／");
 }
 function answerParts(q) {
   let a;
   if (q.type === "truefalse") a = q.answer ? "マル" : "バツ";
-  else if (q.type === "who") a = readingOf(q.answer);
-  else if (q.type === "choice") a = `${KEYS[q.choices.indexOf(q.answer)]}、${choiceSpeech(q, q.choices.indexOf(q.answer))}`;
+  else if (q.type === "who") a = answersOf(q).map(readingOf).join("と、");
+  else if (q.type === "choice") a = answersOf(q).map(x => `${KEYS[q.choices.indexOf(x)]}、${choiceSpeech(q, q.choices.indexOf(x))}`).join("と、");
   else if (q.type === "number") a = fmtNum(q.answer) + (q.unit || "");
-  else a = toSpeech(q.answer);
+  else a = answersOf(q).map(toSpeech).join("、または、");
   const parts = [(q.type === "open" ? "答えは、" : "正解は、") + a + "！"];
   if (S.settings.readExplain && q.explanation) parts.push(toSpeech(q.explanation));
   return parts;
@@ -842,7 +845,7 @@ function voiceOptions() {
 function choicesHtml(q, rev) {
   if (q.type === "choice" || q.type === "who") {
     const cs = q.type === "who" ? whoChoices(q) : q.choices;
-    return `<div class="choices">${cs.map((c, k) => `<div class="choice ${rev ? (c === q.answer ? "correct" : "dim") : ""}">
+    return `<div class="choices">${cs.map((c, k) => `<div class="choice ${rev ? (answersOf(q).includes(c) ? "correct" : "dim") : ""}">
       <span class="key" style="--kc:${KEY_COLORS[k % 4]}">${KEYS[k] || ""}</span><span>${esc(c)}</span></div>`).join("")}</div>`;
   }
   if (q.type === "truefalse") {
