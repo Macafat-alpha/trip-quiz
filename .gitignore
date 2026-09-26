@@ -1,0 +1,4 @@
+# 当日のクイズ・トランスクリプトは公開しない
+quiz-*.json
+*.transcript.*
+.DS_Store
